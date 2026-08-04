@@ -1,0 +1,1385 @@
+<!doctype html>
+<html lang="en" class="light">
+  <head>
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cogito | Simply your mind</title>
+    <link rel="manifest" href="./manifest.json" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body
+    id="appBody"
+    class="bg-white dark:bg-zinc-900 text-gray-900 dark:text-gray-100 transition-colors duration-200 selection-bg"
+  >
+    <div class="flex h-screen overflow-hidden">
+      <!-- LEFT SIDEBAR -->
+      <aside
+        id="leftSidebar"
+        style="width: 280px"
+        class="bg-[#FBFBFA] dark:bg-zinc-950 flex flex-col flex-shrink-0 z-40 relative select-none transition-all duration-300 border-r border-gray-200 dark:border-zinc-800"
+      >
+        <div
+          id="sidebarToggleTab"
+          onclick="toggleSidebarMinify()"
+          class="absolute -right-[23px] top-12 w-6 h-12 bg-[#FBFBFA] dark:bg-zinc-950 border border-l-0 border-gray-200 dark:border-zinc-800 rounded-r-lg flex items-center justify-center cursor-pointer text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 shadow-sm z-50"
+        >
+          <span id="tabIcon" class="text-[10px] font-bold">&lt;&lt;</span>
+        </div>
+
+        <div
+          class="p-5 flex justify-between items-center hide-on-mini h-[68px]"
+        >
+          <h1
+            class="text-base font-semibold tracking-tight cursor-pointer hover:text-blue-500 transition-colors"
+            onclick="goToDashboard()"
+          >
+            Cogito
+          </h1>
+        </div>
+        <div
+          class="p-5 flex justify-center items-center show-on-mini hidden h-[68px]"
+        >
+          <h1
+            class="text-xl font-bold tracking-tight cursor-pointer hover:text-blue-500 transition-colors"
+            onclick="goToDashboard()"
+          >
+            N
+          </h1>
+        </div>
+
+        <div class="mx-4 mb-3 flex flex-col gap-2">
+          <button
+            onclick="createNewNote()"
+            class="flex items-center justify-center gap-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 py-2 px-4 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all text-xs font-medium shadow-sm mini-btn"
+          >
+            <span class="text-lg leading-none">+</span>
+            <span class="hide-on-mini">New note</span>
+          </button>
+          <button
+            onclick="createNewNote('daily')"
+            class="flex items-center justify-center gap-2 bg-gray-100 dark:bg-zinc-800/80 border border-gray-200 dark:border-zinc-700 py-2 px-4 rounded-lg hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all text-xs font-medium shadow-sm mini-btn"
+          >
+            <span>⚡</span>
+            <span class="hide-on-mini">Quick note</span>
+          </button>
+        </div>
+
+        <div class="px-4 mb-2 hide-on-mini">
+          <div class="relative flex items-center">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search (Ctrl + K)..."
+              oninput="
+                toggleSearchClearBtn();
+                renderSidebar();
+              "
+              class="w-full bg-gray-200/60 dark:bg-zinc-900/80 border-none text-xs p-2 pl-7 pr-7 rounded-lg text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-zinc-500 outline-none focus:ring-0"
+            />
+            <svg
+              class="absolute left-2.5 text-gray-400 dark:text-zinc-500"
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <button
+              id="clearSearchBtn"
+              onclick="clearSearch()"
+              class="hidden absolute right-2.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xs font-bold p-0.5 rounded transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="px-4 mb-3 hide-on-mini">
+          <div id="tagsBarWrapper" class="relative w-full overflow-hidden">
+            <div
+              id="sidebarTagsContainer"
+              class="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5 items-center min-h-[28px] cursor-grab select-none"
+            ></div>
+          </div>
+        </div>
+
+        <div
+          id="noteList"
+          class="flex-1 overflow-y-auto custom-scrollbar hide-on-mini"
+        ></div>
+
+        <div
+          class="mt-auto p-3.5 border-t border-gray-200 dark:border-zinc-800 flex justify-right gap-4 items-center mini-col"
+        >
+          <button
+            onclick="openSettingsModal()"
+            class="p-2 text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-200 dark:hover:bg-zinc-800 rounded transition-all"
+            title="Settings"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+              />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </button>
+          <button
+            onclick="openTrashView()"
+            class="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded transition-all"
+            title="Trash"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 6h18" />
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            </svg>
+          </button>
+        </div>
+      </aside>
+
+      <div
+        id="resizer"
+        class="h-full w-1 bg-gray-200 dark:bg-zinc-800 flex-shrink-0 z-30 select-none cursor-col-resize hover:bg-blue-400 transition-colors"
+      ></div>
+
+      <!-- MAIN CONTENT AREA -->
+      <main
+        class="flex-1 flex flex-col h-full bg-white dark:bg-zinc-900 relative overflow-hidden"
+      >
+        <!-- DASHBOARD -->
+        <div
+          id="emptyState"
+          class="flex-1 flex flex-col h-full bg-white dark:bg-zinc-900 dark:bg-zinc-950 overflow-y-auto custom-scrollbar p-6 md:p-12"
+        >
+          <!-- Dynamically populated in ui.js -->
+        </div>
+
+        <!-- TRASH VIEW -->
+        <div
+          id="trashView"
+          class="flex-1 flex flex-col h-full hidden absolute inset-0 bg-white dark:bg-zinc-900 z-10"
+        >
+          <div
+            class="py-4 px-6 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between"
+          >
+            <div class="flex items-center gap-4">
+              <button
+                onclick="closeTrashView()"
+                class="flex items-center gap-1 text-sm text-gray-500 hover:text-black dark:hover:text-white transition-colors font-medium"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m15 18-6-6 6-6" /></svg
+                >Back
+              </button>
+              <h2 class="text-lg font-bold">Trash</h2>
+            </div>
+            <button
+              onclick="emptyTrash()"
+              class="text-xs bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-md hover:bg-red-200 dark:hover:bg-red-900/60 font-medium transition-colors"
+            >
+              Empty trash
+            </button>
+          </div>
+          <div
+            id="trashList"
+            class="flex-1 overflow-y-auto p-6 flex flex-col gap-2 max-w-4xl mx-auto w-full"
+          ></div>
+        </div>
+
+        <!-- TRASH READONLY EDITOR -->
+        <div
+          id="trashEditorContainer"
+          class="flex-1 flex flex-col h-full hidden absolute inset-0 bg-white dark:bg-zinc-900 z-20"
+        >
+          <div
+            class="py-2.5 px-6 flex justify-between items-center bg-gray-50/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-gray-200 dark:border-zinc-800"
+          >
+            <button
+              onclick="closeTrashEditor()"
+              class="flex items-center gap-1 text-sm text-gray-500 hover:text-black dark:hover:text-white transition-colors font-medium"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="m15 18-6-6 6-6" /></svg
+              >Back
+            </button>
+            <div class="flex gap-2">
+              <button
+                onclick="restoreCurrentNote()"
+                class="text-xs bg-black dark:bg-white text-white dark:text-black px-4 py-1.5 rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 font-medium"
+              >
+                Restore note
+              </button>
+              <button
+                onclick="hardDeleteCurrentNote()"
+                class="text-xs bg-red-100 text-red-600 px-4 py-1.5 rounded-md hover:bg-red-200 font-medium"
+              >
+                Delete permanently
+              </button>
+            </div>
+          </div>
+          <div
+            class="flex-1 overflow-y-auto p-8 opacity-70 pointer-events-none"
+          >
+            <div class="max-w-4xl mx-auto w-full">
+              <h1
+                id="trashNoteTitleView"
+                class="font-bold text-3xl mb-4 text-gray-800 dark:text-gray-100"
+              ></h1>
+              <div
+                id="trashNoteContentView"
+                class="text-lg leading-relaxed"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NORMAL EDITOR -->
+        <div
+          id="editorContainer"
+          class="flex-1 flex flex-col h-full hidden relative"
+        >
+          <div
+            id="btnContainer"
+            class="h-12 px-3 md:px-6 flex justify-between items-center bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md z-10 flex-shrink-0 select-none border-b border-gray-50 dark:border-zinc-800"
+          >
+            <div class="flex items-center gap-3 w-full">
+              <div
+                id="breadcrumbContainer"
+                class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400 font-medium pointer-events-none"
+              >
+                <span>Pages</span>
+                <span>/</span>
+                <span
+                  id="headerNoteTitle"
+                  class="text-gray-900 dark:text-gray-100 truncate max-w-[120px] md:max-w-xs"
+                  >Untitled</span
+                >
+              </div>
+              <div id="saveIndicator" class="save-dot idle" title="Saved"></div>
+              <div
+                id="tagsContainer"
+                class="flex flex-wrap items-center gap-1.5"
+              ></div>
+            </div>
+
+            <div class="flex gap-2.5 items-center relative flex-shrink-0">
+              <span
+                id="wordCounter"
+                class="text-xs text-gray-400 dark:text-zinc-500 select-none mr-1 hidden sm:inline-block font-medium"
+              >
+                0 words • 0 chars • 0 min read
+              </span>
+              <button
+                id="btnAutoTag"
+                onclick="aiAutoTag()"
+                class="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all shadow-sm font-medium whitespace-nowrap flex items-center gap-1"
+                title="Generate tags with AI"
+              >
+                <span>🏷️</span> AI Tags
+              </button>
+              <button
+                id="btnOrganize"
+                onclick="aiOrganize()"
+                class="text-xs bg-black dark:bg-white text-white dark:text-black px-3 py-1.5 rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-sm font-medium whitespace-nowrap"
+              >
+                AI Format
+              </button>
+              <button
+                id="pinStarBtn"
+                onclick="togglePinCurrentNote()"
+                title="Pin note"
+                class="px-2 py-1 text-base transition-transform active:scale-125 ml-2"
+              >
+                <span
+                  id="starIcon"
+                  class="text-gray-300 dark:text-zinc-600 hover:text-amber-400"
+                  >☆</span
+                >
+              </button>
+              <button
+                id="rightSidebarTrigger"
+                onclick="toggleRightSidebar(event)"
+                class="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-500 dark:text-gray-400 transition-all"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="1" />
+                  <circle cx="19" cy="12" r="1" />
+                  <circle cx="5" cy="12" r="1" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div
+            id="scrollableEditor"
+            class="flex-1 overflow-y-auto custom-scrollbar relative group/editor"
+          >
+            <!-- Dynamic Note Cover Banner -->
+            <div
+              id="noteCoverContainer"
+              class="h-44 w-full relative z-0 group/cover overflow-hidden transition-all bg-gradient-to-r from-slate-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900"
+            >
+              <div
+                id="noteCover"
+                class="w-full h-full bg-cover bg-center"
+              ></div>
+              <div
+                id="coverControls"
+                class="absolute bottom-3 right-6 flex gap-2 opacity-0 group-hover/cover:opacity-100 transition-opacity z-20 select-none"
+              >
+                <button
+                  onclick="openCoverPicker()"
+                  class="px-2.5 py-1 text-xs bg-white/90 dark:bg-zinc-900/90 hover:bg-white dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200 rounded-lg shadow border border-gray-200 dark:border-zinc-700 font-medium flex items-center gap-1 backdrop-blur-sm"
+                >
+                  <span>🖼️</span> Change cover
+                </button>
+                <button
+                  id="btnRemoveCover"
+                  onclick="removeNoteCover()"
+                  class="px-2.5 py-1 text-xs bg-white/90 dark:bg-zinc-900/90 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 rounded-lg shadow border border-gray-200 dark:border-zinc-700 font-medium hidden backdrop-blur-sm"
+                >
+                  ✕ Remove cover
+                </button>
+              </div>
+            </div>
+
+            <div
+              id="innerContent"
+              class="max-w-3xl mx-auto w-full transition-all duration-300 relative z-10 -mt-12 px-4 md:px-12 pb-64 bg-transparent"
+            >
+              <div
+                id="noteHeaderControls"
+                class="flex items-center gap-3 mb-2 opacity-0 hover:opacity-100 transition-opacity select-none"
+              >
+                <button
+                  id="btnAddIconHover"
+                  onclick="openEmojiPicker()"
+                  class="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white flex items-center gap-1 py-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all font-medium"
+                >
+                  <span>😀</span> Add icon
+                </button>
+                <button
+                  id="btnAddCoverHover"
+                  onclick="openCoverPicker()"
+                  class="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white flex items-center gap-1 py-1 px-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all font-medium"
+                >
+                  <span>🖼️</span> Add cover
+                </button>
+              </div>
+
+              <!-- Page Icon Element -->
+              <div
+                id="noteIconContainer"
+                class="relative inline-block mb-3 group/icon select-none cursor-pointer"
+                onclick="openEmojiPicker()"
+                title="Change icon"
+              >
+                <span
+                  id="noteIcon"
+                  class="text-6xl md:text-7xl block transition-transform hover:scale-105"
+                  >📑</span
+                >
+                <button
+                  id="btnRemoveIcon"
+                  onclick="
+                    event.stopPropagation();
+                    removeNoteIcon();
+                  "
+                  class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 shadow text-xs font-bold text-gray-400 hover:text-red-500 opacity-0 group-hover/icon:opacity-100 transition-opacity flex items-center justify-center"
+                  title="Remove icon"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <textarea
+                id="noteTitle"
+                rows="1"
+                placeholder="New note"
+                oninput="
+                  autoResizeTitle(this);
+                  syncHeaderTitle();
+                  autoSave();
+                "
+                class="font-bold mb-2 text-4xl text-gray-900 dark:text-gray-100 w-full placeholder-gray-300 dark:placeholder-zinc-700 bg-transparent resize-none overflow-hidden break-words whitespace-pre-wrap leading-tight"
+              ></textarea>
+              <div
+                id="noteContent"
+                class="w-full flex flex-col space-y-1"
+              ></div>
+            </div>
+          </div>
+
+          <!-- SLASH MENU -->
+          <div
+            id="slashMenu"
+            class="hidden absolute z-50 w-56 bg-white/95 dark:bg-zinc-900/95 border border-black/10 dark:border-white/10 rounded-xl shadow-xl overflow-hidden backdrop-blur-md"
+          >
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('p')"
+            >
+              <span class="font-bold text-sm w-5 text-center">¶</span>
+              <span>Text</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('h1')"
+            >
+              <span class="font-bold text-base w-5 text-center">H1</span>
+              <span>Heading 1</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('h2')"
+            >
+              <span class="font-bold text-sm w-5 text-center">H2</span>
+              <span>Heading 2</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('h3')"
+            >
+              <span class="font-bold text-xs w-5 text-center">H3</span>
+              <span>Heading 3</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('bullet')"
+            >
+              <span class="font-bold w-5 text-center">•</span>
+              <span>Bulleted list</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('number')"
+            >
+              <span class="font-bold w-5 text-center">1.</span>
+              <span>Numbered list</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('todo')"
+            >
+              <span class="font-bold w-5 text-center">☑</span>
+              <span>To-Do list</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('quote')"
+            >
+              <span class="font-bold w-5 text-center">“</span>
+              <span>Quote</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('codeblock')"
+            >
+              <span class="font-bold w-5 text-center">&lt;/&gt;</span>
+              <span>Code Block</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('math')"
+            >
+              <span class="font-bold w-5 text-center">∑</span>
+              <span>Math Formula</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('divider')"
+            >
+              <span class="font-bold w-5 text-center">—</span>
+              <span>Divider</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('callout')"
+            >
+              <span class="font-bold w-5 text-center">💡</span>
+              <span>Callout box</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('toggle')"
+            >
+              <span class="font-bold w-5 text-center">▶</span>
+              <span>Toggle list</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('table')"
+            >
+              <span class="font-bold w-5 text-center">▦</span>
+              <span>Table</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('2col')"
+            >
+              <span class="font-bold w-5 text-center">◫</span>
+              <span>2 Columns</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('3col')"
+            >
+              <span class="font-bold w-5 text-center">▥</span>
+              <span>3 Columns</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('kanban')"
+            >
+              <span class="font-bold w-5 text-center">◫</span>
+              <span>Kanban board</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('bookmark')"
+            >
+              <span class="font-bold w-5 text-center">🔖</span>
+              <span>Web Bookmark</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('video')"
+            >
+              <span class="font-bold w-5 text-center">▶️</span>
+              <span>Video Embed</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('audio')"
+            >
+              <span class="font-bold w-5 text-center">🎵</span>
+              <span>Audio Embed</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('template')"
+            >
+              <span class="font-bold text-indigo-500 w-5 text-center">📄</span>
+              <span>Choose Template</span>
+            </div>
+            <div
+              class="slash-item border-t border-gray-100 dark:border-zinc-800 p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('ai-fix')"
+            >
+              <span class="font-bold text-blue-500 w-5 text-center">✨</span>
+              <span>AI Fix grammar</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('ai-translate')"
+            >
+              <span class="font-bold text-blue-500 w-5 text-center">🌐</span>
+              <span>AI Translate text</span>
+            </div>
+            <div
+              class="slash-item p-2 flex items-center gap-2.5 text-[13px] cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-gray-200"
+              onclick="executeSlashCommand('ai-expand')"
+            >
+              <span class="font-bold text-blue-500 w-5 text-center">📝</span>
+              <span>AI Expand idea</span>
+            </div>
+          </div>
+
+          <div
+            id="dockedChat"
+            class="absolute bottom-0 left-0 right-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md p-4 md:px-8 z-10"
+          >
+            <div
+              id="innerChat"
+              class="max-w-4xl mx-auto w-full transition-all duration-300"
+            >
+              <div
+                id="chatHistory"
+                class="max-h-40 overflow-y-auto custom-scrollbar space-y-2 mb-3 text-xs"
+              ></div>
+              <div
+                class="flex gap-2 items-center bg-gray-50 dark:bg-zinc-800/60 rounded-xl px-3 py-1 border border-gray-200/50 dark:border-zinc-700/50"
+              >
+                <input
+                  type="text"
+                  id="aiQuery"
+                  placeholder="Ask AI about this note (You can also use Ctrl + Space to continue writing)..."
+                  class="flex-1 bg-transparent border-none p-2 text-xs placeholder-gray-400 dark:placeholder-zinc-500 text-gray-800 dark:text-gray-100 outline-none focus:ring-0"
+                  onkeypress="if (event.key === 'Enter') askAI();"
+                />
+                <button
+                  id="sendAiBtn"
+                  onclick="askAI()"
+                  class="bg-black dark:bg-white text-white dark:text-black p-2 rounded-lg hover:opacity-80 transition-all flex-shrink-0 disabled:opacity-50"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="m22 2-7 20-4-9-9-4Z" />
+                    <path d="M22 2 11 13" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- RIGHT OPTIONS SIDEBAR -->
+      <div
+        id="rightSidebar"
+        class="fixed top-0 right-0 h-full w-72 bg-white dark:bg-zinc-950 border-l border-gray-200 dark:border-zinc-800 z-30 transform translate-x-full transition-transform duration-300 ease-in-out shadow-2xl flex flex-col"
+      >
+        <div
+          class="p-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center"
+        >
+          <span
+            class="text-xs font-semibold uppercase tracking-wider text-gray-400"
+            >Note options</span
+          >
+          <button
+            onclick="closeRightSidebar()"
+            class="p-1 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-500"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="p-4 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+          <div>
+            <h4
+              class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1"
+            >
+              Information
+            </h4>
+            <div class="space-y-3 px-1">
+              <div>
+                <span
+                  class="text-gray-400 font-medium block text-[10px] uppercase tracking-wider"
+                  >Created</span
+                >
+                <div
+                  id="sidebarCreatedAt"
+                  class="font-medium text-gray-800 dark:text-gray-200 text-xs mt-0.5"
+                >
+                  -
+                </div>
+              </div>
+              <div>
+                <span
+                  class="text-gray-400 font-medium block text-[10px] uppercase tracking-wider"
+                  >Last modified</span
+                >
+                <div
+                  id="sidebarUpdatedAt"
+                  class="font-medium text-gray-800 dark:text-gray-200 text-xs mt-0.5"
+                >
+                  -
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h4
+              class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1"
+            >
+              Backlinks
+            </h4>
+            <div id="backlinksContainer" class="space-y-1.5 px-1 text-xs"></div>
+          </div>
+          <div>
+            <button
+              onclick="restoreCurrentNoteBackup()"
+              class="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-900 transition-all text-xs font-medium"
+            >
+              <span>↺ Restore last version</span>
+            </button>
+          </div>
+          <div>
+            <h4
+              class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1"
+            >
+              Display
+            </h4>
+            <button
+              onclick="toggleFullWidth()"
+              class="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-900 transition-all text-xs font-medium"
+            >
+              <span id="widthLabel">Full width</span>
+            </button>
+          </div>
+          <div>
+            <h4
+              class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1"
+            >
+              Export
+            </h4>
+            <div class="space-y-1">
+              <button
+                onclick="exportMarkdown()"
+                class="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-900 transition-all text-xs font-medium"
+              >
+                <span>📥</span> Download .MD
+              </button>
+              <button
+                onclick="exportHTML()"
+                class="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-900 transition-all text-xs font-medium"
+              >
+                <span>🌐</span> Save as HTML
+              </button>
+              <button
+                onclick="window.print()"
+                class="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-900 transition-all text-xs font-medium"
+              >
+                <span>📄</span> Save as PDF
+              </button>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-gray-100 dark:border-zinc-900">
+            <button
+              onclick="deleteCurrentNote()"
+              class="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 transition-all text-xs font-medium"
+            >
+              <span>🗑️</span> Delete note
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS MODAL -->
+      <div
+        id="settingsModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden"
+      >
+        <div
+          class="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative"
+        >
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-base font-semibold">General Settings</h3>
+            <button
+              onclick="closeSettingsModal()"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div
+            class="space-y-4 text-xs h-[60vh] overflow-y-auto custom-scrollbar px-1 pb-4"
+          >
+            <!-- Theme & Focus Mode -->
+            <div
+              class="space-y-3 p-3 bg-gray-50 dark:bg-zinc-900/50 rounded-xl border border-gray-100 dark:border-zinc-800/80"
+            >
+              <div class="flex items-center justify-between">
+                <span class="font-medium">Theme:</span>
+                <button
+                  onclick="toggleDarkMode()"
+                  class="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all font-medium flex items-center gap-1.5"
+                >
+                  <span id="themeBtnText">🌙 Dark mode</span>
+                </button>
+              </div>
+              <div
+                class="flex items-center justify-between pt-2 border-t border-gray-200/50 dark:border-zinc-800/60"
+              >
+                <div>
+                  <span class="font-medium block text-xs">Focus Mode</span>
+                  <span class="text-[10px] text-gray-400 block"
+                    >Hides options and layout editing buttons</span
+                  >
+                </div>
+                <label class="switch">
+                  <input
+                    type="checkbox"
+                    id="focusModeToggle"
+                    onchange="toggleFocusModeStatus()"
+                  />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- AI -->
+            <div
+              class="p-4 bg-gray-50 dark:bg-zinc-900/50 rounded-xl border border-gray-100 dark:border-zinc-800/80 space-y-3"
+            >
+              <div class="flex items-center justify-between">
+                <span class="font-medium text-sm">Enable AI tool</span>
+                <label class="switch">
+                  <input
+                    type="checkbox"
+                    id="aiToggle"
+                    onchange="toggleAiStatus()"
+                  />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div id="apiKeyContainer" class="pt-2">
+                <label class="block text-gray-400 mb-1">Gemini API Key:</label>
+                <input
+                  type="password"
+                  id="geminiKey"
+                  placeholder="Enter API key..."
+                  class="w-full p-2.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg focus:border-black dark:focus:border-white outline-none focus:ring-0 transition-all text-xs"
+                  onchange="saveApiKey()"
+                />
+              </div>
+            </div>
+
+            <!-- Backup & Cloud -->
+            <div
+              class="p-4 bg-gray-50 dark:bg-zinc-900/50 rounded-xl border border-gray-100 dark:border-zinc-800/80 space-y-3"
+            >
+              <span class="font-medium text-sm block"
+                >Backup & Cloud (JSON)</span
+              >
+              <div class="flex gap-2">
+                <button
+                  onclick="exportBackup()"
+                  class="flex-1 bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors"
+                >
+                  Download Backup
+                </button>
+                <button
+                  onclick="document.getElementById('importBackupFile').click()"
+                  class="flex-1 bg-gray-200 text-gray-700 dark:bg-zinc-800 dark:text-gray-300 py-2 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-zinc-700 transition-colors"
+                >
+                  Load Backup
+                </button>
+                <input
+                  type="file"
+                  id="importBackupFile"
+                  class="hidden"
+                  accept=".json"
+                  onchange="importBackup(event)"
+                />
+              </div>
+            </div>
+
+            <div class="px-1 pt-2">
+              <span class="font-medium block mb-2">Font style:</span>
+              <div class="flex gap-2 font-selection-group">
+                <button
+                  onclick="changeFont('Inter, sans-serif', this)"
+                  class="flex-1 p-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 font-sans transition font-active"
+                >
+                  <span class="text-base font-bold block">Aa</span
+                  ><span class="text-[10px] uppercase text-gray-500">Sans</span>
+                </button>
+                <button
+                  onclick="changeFont('Georgia, serif', this)"
+                  class="flex-1 p-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 font-serif transition"
+                >
+                  <span class="text-base font-bold block">Aa</span
+                  ><span class="text-[10px] uppercase text-gray-500"
+                    >Serif</span
+                  >
+                </button>
+                <button
+                  onclick="changeFont('monospace', this)"
+                  class="flex-1 p-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-700 font-mono transition"
+                >
+                  <span class="text-base font-bold block">Aa</span
+                  ><span class="text-[10px] uppercase text-gray-500">Mono</span>
+                </button>
+              </div>
+            </div>
+            <div class="flex items-center justify-between px-1 pt-2">
+              <span class="font-medium">Text font size:</span>
+              <select
+                id="fontSizeSelect"
+                onchange="changeFontSize(this.value)"
+                class="bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 p-2 rounded-lg text-xs font-medium outline-none"
+              >
+                <option value="16px">Small (16px)</option>
+                <option value="18px" selected>Medium (18px)</option>
+                <option value="20px">Large (20px)</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button
+              onclick="closeSettingsModal()"
+              class="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-xl text-xs font-medium hover:opacity-80 transition-all"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confirm Delete Popup -->
+      <div
+        id="confirmDeleteModal"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden"
+      >
+        <div
+          class="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl w-full max-w-sm p-6 shadow-2xl"
+        >
+          <h3 class="text-lg font-bold mb-2">Move to trash?</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            This note will be moved to trash and can be restored later.
+          </p>
+          <div class="flex justify-end gap-2">
+            <button
+              onclick="closeConfirmDelete()"
+              class="px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-zinc-800"
+            >
+              Cancel
+            </button>
+            <button
+              onclick="executeMoveToTrash()"
+              class="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 text-white hover:bg-red-700"
+            >
+              Move
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEMPLATE PICKER MODAL -->
+      <div
+        id="templatePickerModal"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center hidden"
+        onclick="closeTemplatePicker()"
+      >
+        <div
+          class="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-md p-5 shadow-2xl relative"
+          onclick="event.stopPropagation()"
+        >
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="font-bold text-sm">Choose Template</h3>
+            <button
+              onclick="closeTemplatePicker()"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm"
+            >
+              ✕
+            </button>
+          </div>
+          <div
+            class="grid grid-cols-1 gap-2 p-2 max-h-60 overflow-y-auto custom-scrollbar"
+          >
+            <button
+              onclick="applyTemplate('daily')"
+              class="text-left p-3 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors border border-gray-100 dark:border-zinc-800"
+            >
+              <div class="font-bold text-sm">📅 Daily Journal</div>
+              <div class="text-xs text-gray-500">
+                Habit tracker, gratitude, goals
+              </div>
+            </button>
+            <button
+              onclick="applyTemplate('project')"
+              class="text-left p-3 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors border border-gray-100 dark:border-zinc-800"
+            >
+              <div class="font-bold text-sm">🚀 Project Planner</div>
+              <div class="text-xs text-gray-500">
+                Kanban board, tasks, resources
+              </div>
+            </button>
+            <button
+              onclick="applyTemplate('meeting')"
+              class="text-left p-3 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors border border-gray-100 dark:border-zinc-800"
+            >
+              <div class="font-bold text-sm">👥 Meeting Notes</div>
+              <div class="text-xs text-gray-500">
+                Agenda, participants, action items
+              </div>
+            </button>
+            <button
+              onclick="applyTemplate('todo')"
+              class="text-left p-3 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors border border-gray-100 dark:border-zinc-800"
+            >
+              <div class="font-bold text-sm">☑️ To-Do list</div>
+              <div class="text-xs text-gray-500">Simple task checklist</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMOJI PICKER MODAL -->
+      <div
+        id="emojiPickerModal"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center hidden"
+        onclick="closeEmojiPicker()"
+      >
+        <div
+          class="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-sm p-5 shadow-2xl relative"
+          onclick="event.stopPropagation()"
+        >
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="font-bold text-sm">Choose note icon</h3>
+            <button
+              onclick="closeEmojiPicker()"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm"
+            >
+              ✕
+            </button>
+          </div>
+          <div
+            class="grid grid-cols-6 gap-2 p-2 max-h-60 overflow-y-auto custom-scrollbar text-2xl"
+          >
+            <button
+              onclick="selectEmoji('📑')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              📑
+            </button>
+            <button
+              onclick="selectEmoji('📝')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              📝
+            </button>
+            <button
+              onclick="selectEmoji('💡')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              💡
+            </button>
+            <button
+              onclick="selectEmoji('🚀')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              🚀
+            </button>
+            <button
+              onclick="selectEmoji('🎯')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              🎯
+            </button>
+            <button
+              onclick="selectEmoji('📚')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              📚
+            </button>
+            <button
+              onclick="selectEmoji('🎨')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              🎨
+            </button>
+            <button
+              onclick="selectEmoji('💻')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              💻
+            </button>
+            <button
+              onclick="selectEmoji('🧠')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              🧠
+            </button>
+            <button
+              onclick="selectEmoji('📅')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              📅
+            </button>
+            <button
+              onclick="selectEmoji('📌')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              📌
+            </button>
+            <button
+              onclick="selectEmoji('⭐')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              ⭐
+            </button>
+            <button
+              onclick="selectEmoji('🔥')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              🔥
+            </button>
+            <button
+              onclick="selectEmoji('⚙️')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              ⚙️
+            </button>
+            <button
+              onclick="selectEmoji('☕')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              ☕
+            </button>
+            <button
+              onclick="selectEmoji('🎵')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              🎵
+            </button>
+            <button
+              onclick="selectEmoji('🌲')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              🌲
+            </button>
+            <button
+              onclick="selectEmoji('🌈')"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+            >
+              🌈
+            </button>
+          </div>
+          <div
+            class="mt-4 pt-3 border-t border-gray-100 dark:border-zinc-800 flex justify-between items-center"
+          >
+            <button
+              onclick="
+                removeNoteIcon();
+                closeEmojiPicker();
+              "
+              class="text-xs text-red-500 hover:text-red-600 font-medium"
+            >
+              ✕ Remove icon
+            </button>
+            <button
+              onclick="closeEmojiPicker()"
+              class="text-xs bg-gray-100 dark:bg-zinc-800 px-3 py-1.5 rounded-lg font-medium"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COVER PICKER MODAL -->
+      <div
+        id="coverPickerModal"
+        class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center hidden"
+        onclick="closeCoverPicker()"
+      >
+        <div
+          class="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-2xl w-full max-w-md p-5 shadow-2xl relative space-y-4"
+          onclick="event.stopPropagation()"
+        >
+          <div
+            class="flex justify-between items-center border-b border-gray-100 dark:border-zinc-800 pb-3"
+          >
+            <h3 class="font-bold text-sm">Choose note cover</h3>
+            <button
+              onclick="closeCoverPicker()"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-sm"
+            >
+              ✕
+            </button>
+          </div>
+
+          <!-- Tabbed choices -->
+          <div>
+            <span class="text-xs font-semibold block text-gray-500 mb-2"
+              >Gradients:</span
+            >
+            <div class="grid grid-cols-4 gap-2">
+              <div
+                onclick="
+                  selectCover(
+                    'linear-gradient(to right, #4facfe 0%, #00f2fe 100%)',
+                  )
+                "
+                class="h-14 rounded-lg cursor-pointer hover:scale-105 transition-transform border border-black/10"
+                style="
+                  background: linear-gradient(
+                    to right,
+                    #4facfe 0%,
+                    #00f2fe 100%
+                  );
+                "
+              ></div>
+              <div
+                onclick="
+                  selectCover(
+                    'linear-gradient(to right, #ff758c 0%, #ff7eb3 100%)',
+                  )
+                "
+                class="h-14 rounded-lg cursor-pointer hover:scale-105 transition-transform border border-black/10"
+                style="
+                  background: linear-gradient(
+                    to right,
+                    #ff758c 0%,
+                    #ff7eb3 100%
+                  );
+                "
+              ></div>
+              <div
+                onclick="
+                  selectCover(
+                    'linear-gradient(to right, #43e97b 0%, #38f9d7 100%)',
+                  )
+                "
+                class="h-14 rounded-lg cursor-pointer hover:scale-105 transition-transform border border-black/10"
+                style="
+                  background: linear-gradient(
+                    to right,
+                    #43e97b 0%,
+                    #38f9d7 100%
+                  );
+                "
+              ></div>
+              <div
+                onclick="
+                  selectCover(
+                    'linear-gradient(to right, #fa709a 0%, #fee140 100%)',
+                  )
+                "
+                class="h-14 rounded-lg cursor-pointer hover:scale-105 transition-transform border border-black/10"
+                style="
+                  background: linear-gradient(
+                    to right,
+                    #fa709a 0%,
+                    #fee140 100%
+                  );
+                "
+              ></div>
+            </div>
+          </div>
+
+          <div
+            class="space-y-2 pt-2 border-t border-gray-100 dark:border-zinc-800"
+          >
+            <span class="text-xs font-semibold block text-gray-500"
+              >Enter image URL from web:</span
+            >
+            <div class="flex gap-2">
+              <input
+                type="text"
+                id="coverUrlInput"
+                placeholder="https://images.unsplash.com/..."
+                class="flex-1 p-2 text-xs bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg outline-none"
+              />
+              <button
+                onclick="applyCoverUrl()"
+                class="px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black rounded-lg text-xs font-medium"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+
+          <div
+            class="space-y-2 pt-2 border-t border-gray-100 dark:border-zinc-800"
+          >
+            <span class="text-xs font-semibold block text-gray-500"
+              >Upload from computer:</span
+            >
+            <input
+              type="file"
+              id="coverFileInput"
+              accept="image/*"
+              onchange="uploadCoverFile(event)"
+              class="text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-gray-700 dark:file:bg-zinc-800 dark:file:text-gray-200 hover:file:bg-gray-200"
+            />
+          </div>
+
+          <div
+            class="pt-2 border-t border-gray-100 dark:border-zinc-800 flex justify-between items-center"
+          >
+            <button
+              onclick="selectRandomUnsplashCover()"
+              class="text-xs bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg font-medium hover:bg-blue-100"
+            >
+              🎲 Random Unsplash
+            </button>
+            <button
+              onclick="
+                removeNoteCover();
+                closeCoverPicker();
+              "
+              class="text-xs text-red-500 hover:text-red-600 font-medium"
+            >
+              ✕ Remove cover
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
