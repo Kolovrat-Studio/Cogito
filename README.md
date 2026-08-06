@@ -7,6 +7,9 @@
 
 **Cogito** is a minimalist web application created with a clear purpose: to provide you with a clean, fast, and clutter-free workspace for organizing your thoughts, notes, and daily tasks without unnecessary stress or bloated animations.
 
+
+Join us on Stoat: https://stt.gg/bn10qyar
+
 ---
 
 ## ✨ Key Features
