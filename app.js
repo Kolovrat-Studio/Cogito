@@ -572,7 +572,7 @@ window.exportBackup = () => {
   const blob = new Blob([data], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `notion_minimal_backup_${new Date().toISOString().split("T")[0]}.json`;
+  a.download = `cogito_backup_${new Date().toISOString().split("T")[0]}.json`;
   a.click();
   showToast("Backup exported successfully", "success");
 };
@@ -658,27 +658,27 @@ window.applyTemplate = (type) => {
   const note = notes.find((n) => n.id === currentNoteId);
   if (!note) return;
 
-  if (type === 'daily') {
+  if (type === "daily") {
     note.title = "Daily Journal";
     note.icon = "📅";
     note.content = `<div data-type="h2">Goals for today</div><div data-type="todo" data-checked="false"></div><div data-type="h2">Notes</div><p></p>`;
-  } else if (type === 'project') {
+  } else if (type === "project") {
     note.title = "Project Planner";
     note.icon = "🚀";
     note.content = `<div data-type="h2">Objective</div><p></p><div data-type="h2">Tasks</div><div data-type="todo" data-checked="false"></div>`;
-  } else if (type === 'meeting') {
+  } else if (type === "meeting") {
     note.title = "Meeting Notes";
     note.icon = "👥";
     note.content = `<div data-type="h2">Agenda</div><div data-type="bullet"></div><div data-type="h2">Action Items</div><div data-type="todo" data-checked="false"></div>`;
-  } else if (type === 'todo') {
+  } else if (type === "todo") {
     note.title = "To-Do List";
     note.icon = "☑️";
     note.content = `<div data-type="todo" data-checked="false"></div><div data-type="todo" data-checked="false"></div>`;
   }
-  
+
   saveToLocal();
   closeTemplatePicker();
-  
+
   if (typeof selectNote === "function") {
     selectNote(currentNoteId);
   } else if (typeof window.selectNote === "function") {
@@ -689,7 +689,7 @@ window.applyTemplate = (type) => {
 document.addEventListener("DOMContentLoaded", async () => {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker
-      .register("/sw.js")
+      .register("./sw.js")
       .catch((err) => console.error("SW registration failed", err));
   }
 

@@ -1,25 +1,58 @@
 <!doctype html>
 <html lang="en" class="light">
   <head>
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <!-- 1. Osnovne postavke -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cogito | Simply your mind</title>
-    <link rel="manifest" href="./manifest.json" />
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+
+    <!-- SEO & Open Graph (Za pretraživače i dijeljenje na chatu/društvenim mrežama) -->
+    <meta
+      name="description"
+      content="A minimalist digital workspace for notes and organizing thoughts without distractions."
     />
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <meta property="og:title" content="Cogito | Simply your mind" />
+    <meta
+      property="og:description"
+      content="A minimalist digital workspace for notes and organizing thoughts without distractions."
+    />
+    <meta
+      property="og:url"
+      content="https://kolovrat-studio.github.io/Cogito/"
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:image"
+      content="https://kolovrat-studio.github.io/Cogito/CogitoBaner.jpg"
+    />
+
+    <!-- 2. Preconnect za fontove i vanjske izvore -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
+    <!-- 3. CSS Stilovi -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+    />
     <link rel="stylesheet" href="./style.css" />
+    <link rel="manifest" href="./manifest.json" />
+
+    <!-- 4. Skripte (Tailwind 4 i biblioteke) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"
+      defer
+    ></script>
+    <script src="https://d3js.org/d3.v7.min.js" defer></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"
+      defer
+    ></script>
   </head>
   <body
     id="appBody"

@@ -2,8 +2,8 @@ import { notes, currentNoteId } from "./state.js";
 import { updateAutoSaveStatus } from "./ui.js";
 import { getEditorHtmlContent } from "./editor.js";
 
-const LOCAL_STORAGE_NOTES_KEY = "notionMinimalNotes";
-const LOCAL_STORAGE_CURRENT_NOTE_KEY = "notionMinimalCurrentNoteId";
+const LOCAL_STORAGE_NOTES_KEY = "cogitodbNotes";
+const LOCAL_STORAGE_CURRENT_NOTE_KEY = "cogitodbCurrentNoteId";
 let db;
 
 export function initDB() {
@@ -13,8 +13,7 @@ export function initDB() {
       return reject(new Error("IndexedDB is not supported in this browser."));
     }
 
-    const openDatabase = (version) =>
-      indexedDB.open("NotionMinimalDB", version);
+    const openDatabase = (version) => indexedDB.open("cogitodb", version);
     const request = openDatabase(2);
 
     request.onupgradeneeded = (e) => {
